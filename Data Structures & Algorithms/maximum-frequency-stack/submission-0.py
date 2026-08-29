@@ -1,39 +1,28 @@
 class FreqStack:
 
     def __init__(self):
-        self.stack = []
-        self.freq = {}
+        self.maxf = 0
+        self.counts = {} # Holds the overall frequency of elements.
+        self.stacks = defaultdict(list) # Holds individual stacks for frequency levels.
 
     def push(self, val: int) -> None:
-        self.stack.append(val)
-        self.freq[val] = 1 + self.freq.get(val, 0)
+        # 1. Update frequency of element
+        self.counts[val] = 1 + self.counts.get(val, 0)
+
+        # 2. Update max_frequency
+        self.maxf = max(self.maxf, self.counts[val])
+
+        # 3. For that frequency level, push the val
+        self.stacks[self.counts[val]].append(val)
 
     def pop(self) -> int:
-        max_freq = max(self.freq.items(), key=lambda x: x[1])[1]
-        max_freq_els = []
-        for k, v in self.freq.items():
-            if v == max_freq:
-                max_freq_els.append(k)
+        # 1. Check if the stack associated with maxf is empty - if it is, then reduce maxf by 1 and then pop from that level
+        if not self.stacks[self.maxf]:
+            self.maxf -= 1
 
-        temp = []
-        while self.stack and self.stack[-1] not in max_freq_els:
-            top = self.stack.pop()
-            temp.append(top)
-            self.freq[top] -= 1
-
-        if self.stack:
-            top = self.stack.pop()
-            self.freq[top] -= 1
-            most_freq_el = top
-        else:
-            most_freq_el = None
-
-        for el in temp:
-            self.stack.append(el)
-            self.freq[el] += 1
-
-        return most_freq_el
-
+        top = self.stacks[self.maxf].pop()
+        self.counts[top] -= 1
+        return top
 
 
 # Your FreqStack object will be instantiated and called as such:
